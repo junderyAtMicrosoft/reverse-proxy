@@ -16,15 +16,16 @@ namespace Microsoft.ReverseProxy.Middleware
 {
     public abstract class AffinityMiddlewareTestBase
     {
+        protected const string ClusterId = "cluster-1";
         protected const string AffinitizedDestinationName = "dest-B";
         protected readonly IReadOnlyList<DestinationInfo> Destinations = new[] { new DestinationInfo("dest-A"), new DestinationInfo(AffinitizedDestinationName), new DestinationInfo("dest-C") };
-        protected readonly ClusterConfig ClusterConfig = new ClusterConfig(default, default, new ClusterConfig.ClusterSessionAffinityOptions(true, "Mode-B", "Policy-1", null));
+        protected readonly ClusterConfig ClusterConfig = new ClusterConfig(ClusterId, default, default, new ClusterConfig.ClusterSessionAffinityOptions(true, "Mode-B", "Policy-1", null));
 
         internal ClusterInfo GetCluster()
         {
             var destinationManager = new Mock<IDestinationManager>();
             destinationManager.SetupGet(m => m.Items).Returns(SignalFactory.Default.CreateSignal(Destinations));
-            var cluster = new ClusterInfo("cluster-1", destinationManager.Object, new Mock<IProxyHttpClientFactory>().Object);
+            var cluster = new ClusterInfo(ClusterId, destinationManager.Object, new Mock<IProxyHttpClientFactory>().Object);
             cluster.Config.Value = ClusterConfig;
             return cluster;
         }
@@ -78,18 +79,15 @@ namespace Microsoft.ReverseProxy.Middleware
             return result.AsReadOnly();
         }
 
-        internal IReverseProxyFeature GetDestinationsFeature(IReadOnlyList<DestinationInfo> destinations, ClusterConfig clusterConfig)
+        internal IReverseProxyFeature GetDestinationsFeature(IReadOnlyList<DestinationInfo> destinations, ClusterInfo clusterInfo)
         {
-            var result = new Mock<IReverseProxyFeature>(MockBehavior.Strict);
-            result.SetupProperty(p => p.AvailableDestinations, destinations);
-            result.SetupProperty(p => p.ClusterConfig, clusterConfig);
-            return result.Object;
+            return new ReverseProxyFeature {AvailableDestinations = destinations, ClusterConfig = clusterInfo};
         }
 
         internal Endpoint GetEndpoint(ClusterInfo cluster)
         {
             var endpoints = new List<Endpoint>(1);
-            var routeConfig = new RouteConfig(new RouteInfo("route-1"), 47, null, cluster, endpoints.AsReadOnly(), Transforms.Empty);
+            var routeConfig = new RouteConfig("route-1", 47, null, cluster, endpoints.AsReadOnly(), Transforms.Empty);
             var endpoint = new Endpoint(default, new EndpointMetadataCollection(routeConfig), string.Empty);
             endpoints.Add(endpoint);
             return endpoint;

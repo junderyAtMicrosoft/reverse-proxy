@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.Service.Management;
 using Microsoft.ReverseProxy.Service.Proxy.Infrastructure;
 using Microsoft.ReverseProxy.Signals;
@@ -21,7 +22,7 @@ namespace Microsoft.ReverseProxy.RuntimeModel
     /// relevant to this cluster.
     /// All members are thread safe.
     /// </remarks>
-    internal sealed class ClusterInfo
+    internal sealed class ClusterInfo : IClusterConfig
     {
         public ClusterInfo(string clusterId, IDestinationManager destinationManager, IProxyHttpClientFactory proxyHttpClientFactory)
         {
@@ -47,6 +48,8 @@ namespace Microsoft.ReverseProxy.RuntimeModel
         /// in reaction to config changes.
         /// </summary>
         public Signal<ClusterConfig> Config { get; } = SignalFactory.Default.CreateSignal<ClusterConfig>();
+
+        public ClusterConfig Value => Config.Value;
 
         /// <summary>
         /// Encapsulates parts of a cluster that can change atomically
@@ -87,5 +90,17 @@ namespace Microsoft.ReverseProxy.RuntimeModel
                             healthyDestinations: healthyEndpoints);
                     });
         }
+
+        public void BeginProxyRequest()
+        {
+            ConcurrencyCounter.Increment();
+        }
+
+        public void EndProxyRequest()
+        {
+            ConcurrencyCounter.Decrement();
+        }
+
+
     }
 }

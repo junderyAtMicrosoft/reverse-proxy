@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -43,11 +42,12 @@ namespace Microsoft.ReverseProxy.Middleware
         {
             _ = context ?? throw new ArgumentNullException(nameof(context));
 
-            var destinations = context.GetRequiredProxyFeature().AvailableDestinations
-                ?? throw new InvalidOperationException($"The {nameof(IReverseProxyFeature)} Destinations collection was not set.");
+            var reverseProxyFeature = context.GetRequiredProxyFeature();
+            var destinations = reverseProxyFeature.AvailableDestinations
+                               ?? throw new InvalidOperationException($"The {nameof(IReverseProxyFeature)} Destinations collection was not set.");
 
-            var routeConfig = context.GetRequiredRouteConfig();
-            var cluster = routeConfig.Cluster;
+
+            var cluster = reverseProxyFeature.ClusterConfig;
 
             if (destinations.Count == 0)
             {
@@ -64,8 +64,8 @@ namespace Microsoft.ReverseProxy.Middleware
                 destination = destinations[random.Next(destinations.Count)];
             }
 
-            var destinationConfig = destination.Config;
-            if (destinationConfig == null)
+            var destinationAddress = destination.Address;
+            if (destinationAddress == null)
             {
                 throw new InvalidOperationException($"Chosen destination has no configs set: '{destination.DestinationId}'");
             }
@@ -79,25 +79,25 @@ namespace Microsoft.ReverseProxy.Middleware
                 try
                 {
                     // TODO: Apply caps
-                    cluster.ConcurrencyCounter.Increment();
-                    destination.ConcurrencyCounter.Increment();
+                    cluster.BeginProxyRequest();
+                    destination.BeginProxyRequest();
 
                     // TODO: Duplex channels should not have a timeout (?), but must react to Proxy force-shutdown signals.
                     var longCancellation = context.RequestAborted;
 
                     var proxyTelemetryContext = new ProxyTelemetryContext(
                         clusterId: cluster.ClusterId,
-                        routeId: routeConfig.Route.RouteId,
+                        routeId: reverseProxyFeature.RouteConfig.RouteId,
                         destinationId: destination.DestinationId);
 
                     await _operationLogger.ExecuteAsync(
                         "ReverseProxy.Proxy",
-                        () => _httpProxy.ProxyAsync(context, destinationConfig.Address, routeConfig.Transforms, cluster.ProxyHttpClientFactory, proxyTelemetryContext, shortCancellation: shortCts.Token, longCancellation: longCancellation));
+                        () => _httpProxy.ProxyAsync(context, destinationAddress, reverseProxyFeature.RouteConfig.Transforms, cluster.ProxyHttpClientFactory, proxyTelemetryContext, shortCancellation: shortCts.Token, longCancellation: longCancellation));
                 }
                 finally
                 {
-                    destination.ConcurrencyCounter.Decrement();
-                    cluster.ConcurrencyCounter.Decrement();
+                    destination.EndProxyRequest();
+                    cluster.EndProxyRequest();
                 }
             }
         }

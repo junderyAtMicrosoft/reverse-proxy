@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using Microsoft.ReverseProxy.RuntimeModel;
+using Microsoft.ReverseProxy.Middleware;
 
 namespace Microsoft.ReverseProxy.Service.SessionAffinity
 {
@@ -11,11 +11,11 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
     /// </summary>
     public readonly struct AffinityResult
     {
-        public IReadOnlyList<DestinationInfo> Destinations { get; }
+        public IReadOnlyList<IDestination> Destinations { get; }
 
         public AffinityStatus Status { get; }
 
-        public AffinityResult(IReadOnlyList<DestinationInfo> destinations, AffinityStatus status)
+        public AffinityResult(IReadOnlyList<IDestination> destinations, AffinityStatus status)
         {
             Destinations = destinations;
             Status = status;

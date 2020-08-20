@@ -34,7 +34,7 @@ namespace Microsoft.ReverseProxy.Middleware
             var proxyFeature = context.GetRequiredProxyFeature();
             var destinations = proxyFeature.AvailableDestinations;
 
-            var loadBalancingOptions = proxyFeature.ClusterConfig.LoadBalancingOptions;
+            var loadBalancingOptions = proxyFeature.ClusterConfig.Value.LoadBalancingOptions;
 
             var destination = _loadBalancer.PickDestination(destinations, in loadBalancingOptions);
 

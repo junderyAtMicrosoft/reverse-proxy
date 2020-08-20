@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.RuntimeModel;
 using Moq;
 using Xunit;
@@ -184,7 +185,7 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
                 context.Items[AffinityKeyId] = key;
             }
 
-            protected override string GetDestinationAffinityKey(DestinationInfo destination)
+            protected override string GetDestinationAffinityKey(IDestination destination)
             {
                 return destination.DestinationId;
             }

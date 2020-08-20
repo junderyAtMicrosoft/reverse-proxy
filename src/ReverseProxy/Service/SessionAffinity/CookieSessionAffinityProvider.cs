@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.ReverseProxy.Abstractions.ClusterDiscovery.Contract;
 using Microsoft.ReverseProxy.RuntimeModel;
 using Microsoft.Extensions.Logging;
+using Microsoft.ReverseProxy.Middleware;
 
 namespace Microsoft.ReverseProxy.Service.SessionAffinity
 {
@@ -26,7 +27,7 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
 
         public override string Mode => SessionAffinityConstants.Modes.Cookie;
 
-        protected override string GetDestinationAffinityKey(DestinationInfo destination)
+        protected override string GetDestinationAffinityKey(IDestination destination)
         {
             return destination.DestinationId;
         }

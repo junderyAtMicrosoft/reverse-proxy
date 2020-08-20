@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.ReverseProxy.Abstractions;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.Utilities;
 
 namespace Microsoft.ReverseProxy.RuntimeModel
@@ -21,14 +22,18 @@ namespace Microsoft.ReverseProxy.RuntimeModel
     public sealed class ClusterConfig
     {
         public ClusterConfig(
+            string clusterId,
             ClusterHealthCheckOptions healthCheckOptions,
             ClusterLoadBalancingOptions loadBalancingOptions,
             ClusterSessionAffinityOptions sessionAffinityOptions)
         {
+            ClusterId = clusterId;
             HealthCheckOptions = healthCheckOptions;
             LoadBalancingOptions = loadBalancingOptions;
             SessionAffinityOptions = sessionAffinityOptions;
         }
+
+        public string ClusterId { get; }
 
         public ClusterHealthCheckOptions HealthCheckOptions { get; }
 

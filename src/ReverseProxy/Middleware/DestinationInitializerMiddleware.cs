@@ -31,7 +31,7 @@ namespace Microsoft.ReverseProxy.Middleware
             var cluster = routeConfig.Cluster;
             if (cluster == null)
             {
-                Log.NoClusterFound(_logger, routeConfig.Route.RouteId);
+                Log.NoClusterFound(_logger, routeConfig.RouteId);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 return Task.CompletedTask;
             }
@@ -39,7 +39,7 @@ namespace Microsoft.ReverseProxy.Middleware
             var clusterConfig = cluster.Config.Value;
             if (clusterConfig == null)
             {
-                Log.ClusterConfigNotAvailable(_logger, routeConfig.Route.RouteId, cluster.ClusterId);
+                Log.ClusterConfigNotAvailable(_logger, routeConfig.RouteId, cluster.ClusterId);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 return Task.CompletedTask;
             }
@@ -47,21 +47,22 @@ namespace Microsoft.ReverseProxy.Middleware
             var dynamicState = cluster.DynamicState.Value;
             if (dynamicState == null)
             {
-                Log.ClusterDataNotAvailable(_logger, routeConfig.Route.RouteId, cluster.ClusterId);
+                Log.ClusterDataNotAvailable(_logger, routeConfig.RouteId, cluster.ClusterId);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 return Task.CompletedTask;
             }
 
             if (dynamicState.HealthyDestinations.Count == 0)
             {
-                Log.NoHealthyDestinations(_logger, routeConfig.Route.RouteId, cluster.ClusterId);
+                Log.NoHealthyDestinations(_logger, routeConfig.RouteId, cluster.ClusterId);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 return Task.CompletedTask;
             }
 
             context.Features.Set<IReverseProxyFeature>(new ReverseProxyFeature
             {
-                ClusterConfig = clusterConfig,
+                RouteConfig = routeConfig,
+                ClusterConfig = cluster,
                 AvailableDestinations = dynamicState.HealthyDestinations
             });
 

@@ -268,6 +268,7 @@ namespace Microsoft.ReverseProxy.Service.Management
                         UpdateRuntimeDestinations(configCluster.Destinations, cluster.DestinationManager);
 
                         var newConfig = new ClusterConfig(
+                                configCluster.Id,
                                 new ClusterConfig.ClusterHealthCheckOptions(
                                     enabled: configCluster.HealthCheckOptions?.Enabled ?? false,
                                     interval: configCluster.HealthCheckOptions?.Interval ?? TimeSpan.FromSeconds(0),
@@ -342,7 +343,7 @@ namespace Microsoft.ReverseProxy.Service.Management
                             {
                                 Log.DestinationChanged(_logger, configDestination.Key);
                             }
-                            destination.ConfigSignal.Value = new DestinationConfig(configDestination.Value.Address);
+                            destination.ConfigSignal.Value = new DestinationConfig(destination.DestinationId, configDestination.Value.Address);
                         }
                     });
             }

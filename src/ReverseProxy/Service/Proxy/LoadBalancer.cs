@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.ReverseProxy.Abstractions;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.RuntimeModel;
 using Microsoft.ReverseProxy.Utilities;
 
@@ -21,8 +22,8 @@ namespace Microsoft.ReverseProxy.Service.Proxy
             _randomFactory = randomFactory;
         }
 
-        public DestinationInfo PickDestination(
-            IReadOnlyList<DestinationInfo> endpoints,
+        public IDestination PickDestination(
+            IReadOnlyList<IDestination> endpoints,
             in ClusterConfig.ClusterLoadBalancingOptions loadBalancingOptions)
         {
             var endpointCount = endpoints.Count;
@@ -55,14 +56,14 @@ namespace Microsoft.ReverseProxy.Service.Proxy
                     var random1 = _randomFactory.CreateRandomInstance();
                     var firstEndpoint = endpoints[random1.Next(endpointCount)];
                     var secondEndpoint = endpoints[random1.Next(endpointCount)];
-                    return (firstEndpoint.ConcurrencyCounter.Value <= secondEndpoint.ConcurrencyCounter.Value) ? firstEndpoint : secondEndpoint;
+                    return (firstEndpoint.PendingRequestCount <= secondEndpoint.PendingRequestCount) ? firstEndpoint : secondEndpoint;
                 case LoadBalancingMode.LeastRequests:
                     var leastRequestsEndpoint = endpoints[0];
-                    var leastRequestsCount = leastRequestsEndpoint.ConcurrencyCounter.Value;
+                    var leastRequestsCount = leastRequestsEndpoint.PendingRequestCount;
                     for (var i = 1; i < endpointCount; i++)
                     {
                         var endpoint = endpoints[i];
-                        var endpointRequestCount = endpoint.ConcurrencyCounter.Value;
+                        var endpointRequestCount = endpoint.PendingRequestCount;
                         if (endpointRequestCount < leastRequestsCount)
                         {
                             leastRequestsEndpoint = endpoint;

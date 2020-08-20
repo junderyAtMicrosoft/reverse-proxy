@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.RuntimeModel;
 
 namespace Microsoft.ReverseProxy.Service.SessionAffinity
@@ -25,7 +26,7 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
 
         public abstract string Mode { get; }
 
-        public virtual void AffinitizeRequest(HttpContext context, in ClusterConfig.ClusterSessionAffinityOptions options, DestinationInfo destination)
+        public virtual void AffinitizeRequest(HttpContext context, in ClusterConfig.ClusterSessionAffinityOptions options, IDestination destination)
         {
             if (!options.Enabled)
             {
@@ -40,7 +41,7 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
             }
         }
 
-        public virtual AffinityResult FindAffinitizedDestinations(HttpContext context, IReadOnlyList<DestinationInfo> destinations, string clusterId, in ClusterConfig.ClusterSessionAffinityOptions options)
+        public virtual AffinityResult FindAffinitizedDestinations(HttpContext context, IReadOnlyList<IDestination> destinations, string clusterId, in ClusterConfig.ClusterSessionAffinityOptions options)
         {
             if (!options.Enabled)
             {
@@ -54,7 +55,7 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
                 return new AffinityResult(null, requestAffinityKey.ExtractedSuccessfully ? AffinityStatus.AffinityKeyNotSet : AffinityStatus.AffinityKeyExtractionFailed);
             }
 
-            IReadOnlyList<DestinationInfo> matchingDestinations = null;
+            IReadOnlyList<IDestination> matchingDestinations = null;
             if (destinations.Count > 0)
             {
                 for (var i = 0; i < destinations.Count; i++)
@@ -95,7 +96,7 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
             return value;
         }
 
-        protected abstract T GetDestinationAffinityKey(DestinationInfo destination);
+        protected abstract T GetDestinationAffinityKey(IDestination destination);
 
         protected abstract (T Key, bool ExtractedSuccessfully) GetRequestAffinityKey(HttpContext context, in ClusterConfig.ClusterSessionAffinityOptions options);
 

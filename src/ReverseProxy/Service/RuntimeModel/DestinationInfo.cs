@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.Signals;
 using Microsoft.ReverseProxy.Utilities;
 
@@ -19,7 +20,7 @@ namespace Microsoft.ReverseProxy.RuntimeModel
     /// relevant to this endpoint.
     /// All members are thread safe.
     /// </remarks>
-    public sealed class DestinationInfo : IReadOnlyList<DestinationInfo>
+    public sealed class DestinationInfo : IReadOnlyList<DestinationInfo>, IDestination
     {
         public DestinationInfo(string destinationId)
         {
@@ -43,6 +44,8 @@ namespace Microsoft.ReverseProxy.RuntimeModel
         /// </summary>
         public DestinationConfig Config => ConfigSignal.Value;
 
+        public string Address => ConfigSignal.Value.Address;
+
         /// <summary>
         /// Encapsulates parts of an destination that can change atomically
         /// in reaction to runtime state changes (e.g. endpoint health states).
@@ -57,14 +60,33 @@ namespace Microsoft.ReverseProxy.RuntimeModel
         /// <summary>
         /// Keeps track of the total number of concurrent requests on this endpoint.
         /// </summary>
-        public int ConcurrentRequestCount => ConcurrencyCounter.Value;
+        public int PendingRequestCount => ConcurrencyCounter.Value;
 
         internal AtomicCounter ConcurrencyCounter { get; } = new AtomicCounter();
+
+        public void BeginProxyRequest()
+        {
+            ConcurrencyCounter.Increment();
+        }
+
+        public void EndProxyRequest()
+        {
+            ConcurrencyCounter.Decrement();
+        }
 
         DestinationInfo IReadOnlyList<DestinationInfo>.this[int index]
             => index == 0 ? this : throw new IndexOutOfRangeException();
 
         int IReadOnlyCollection<DestinationInfo>.Count => 1;
+
+        int IReadOnlyCollection<IDestination>.Count => 1;
+
+        public IDestination this[int index] => index == 0 ? this : throw new IndexOutOfRangeException();
+
+        IEnumerator<IDestination> IEnumerable<IDestination>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
         public Enumerator GetEnumerator()
         {

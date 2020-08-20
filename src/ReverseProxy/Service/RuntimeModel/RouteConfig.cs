@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.ReverseProxy.Abstractions;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.Service.RuntimeModel.Transforms;
 
 namespace Microsoft.ReverseProxy.RuntimeModel
@@ -18,35 +19,35 @@ namespace Microsoft.ReverseProxy.RuntimeModel
     /// Instead, instances of <see cref="RouteConfig"/> are replaced
     /// in their entirety when values need to change.
     /// </remarks>
-    internal sealed class RouteConfig
+    internal sealed class RouteConfig : IRouteConfig
     {
         public RouteConfig(
-            RouteInfo route,
+            string routeId,
             int configHash,
             int? priority,
             ClusterInfo cluster,
             IReadOnlyList<AspNetCore.Http.Endpoint> aspNetCoreEndpoints,
             Transforms transforms)
         {
-            Route = route ?? throw new ArgumentNullException(nameof(route));
             Endpoints = aspNetCoreEndpoints ?? throw new ArgumentNullException(nameof(aspNetCoreEndpoints));
 
+            RouteId = routeId;
             ConfigHash = configHash;
             Priority = priority;
             Cluster = cluster;
             Transforms = transforms;
         }
 
-        public RouteInfo Route { get; }
+        public string RouteId { get; }
 
         internal int ConfigHash { get; }
 
         public int? Priority { get; }
 
         // May not be populated if the cluster config is missing.
-        public ClusterInfo Cluster { get; }
+        internal ClusterInfo Cluster { get; }
 
-        public IReadOnlyList<AspNetCore.Http.Endpoint> Endpoints { get; }
+        internal IReadOnlyList<AspNetCore.Http.Endpoint> Endpoints { get; }
 
         public Transforms Transforms { get; }
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using Microsoft.ReverseProxy.RuntimeModel;
 
 namespace Microsoft.ReverseProxy.Middleware
 {
@@ -11,15 +10,16 @@ namespace Microsoft.ReverseProxy.Middleware
     /// </summary>
     public class ReverseProxyFeature : IReverseProxyFeature
     {
+        public IRouteConfig RouteConfig { get; set; }
+
         /// <summary>
         /// Cluster config for the the current request.
         /// </summary>
-        public ClusterConfig ClusterConfig { get; set; }
+        public IClusterConfig ClusterConfig { get; set; }
 
         /// <summary>
         /// Cluster destinations that can handle the current request.
         /// </summary>
-        public IReadOnlyList<DestinationInfo> AvailableDestinations { get; set; }
-
+        public IReadOnlyList<IDestination> AvailableDestinations { get; set; }
     }
 }

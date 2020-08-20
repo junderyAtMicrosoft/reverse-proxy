@@ -76,7 +76,7 @@ namespace Microsoft.ReverseProxy.RuntimeModel.Tests
             Assert.NotNull(state1);
             Assert.Empty(state1.AllDestinations);
 
-            cluster.Config.Value = new ClusterConfig(healthCheckOptions: default, loadBalancingOptions: default, sessionAffinityOptions: default);
+            cluster.Config.Value = new ClusterConfig(cluster.ClusterId, healthCheckOptions: default, loadBalancingOptions: default, sessionAffinityOptions: default);
             Assert.NotSame(state1, cluster.DynamicState.Value);
             Assert.Empty(cluster.DynamicState.Value.AllDestinations);
         }
@@ -139,6 +139,7 @@ namespace Microsoft.ReverseProxy.RuntimeModel.Tests
         {
             // Pretend that health checks are enabled so that destination health states are honored
             cluster.Config.Value = new ClusterConfig(
+                clusterId: cluster.ClusterId,
                 healthCheckOptions: new ClusterConfig.ClusterHealthCheckOptions(
                     enabled: true,
                     interval: TimeSpan.FromSeconds(5),

@@ -53,21 +53,27 @@ namespace Microsoft.ReverseProxy.Middleware.Tests
                 "destination1",
                 destination =>
                 {
-                    destination.ConfigSignal.Value = new DestinationConfig("https://localhost:123/a/b/");
+                    destination.ConfigSignal.Value = new DestinationConfig(destination.DestinationId, "https://localhost:123/a/b/");
                     destination.DynamicStateSignal.Value = new DestinationDynamicState(DestinationHealth.Healthy);
                 });
-            httpContext.Features.Set<IReverseProxyFeature>(
-                new ReverseProxyFeature() { AvailableDestinations = new List<DestinationInfo>() { destination1 }.AsReadOnly() });
-            httpContext.Features.Set(cluster1);
-
             var aspNetCoreEndpoints = new List<Endpoint>();
             var routeConfig = new RouteConfig(
-                route: new RouteInfo("route1"),
+                routeId: "route1",
                 configHash: 0,
                 priority: null,
                 cluster: cluster1,
                 aspNetCoreEndpoints: aspNetCoreEndpoints.AsReadOnly(),
                 transforms: null);
+            httpContext.Features.Set<IReverseProxyFeature>(
+                new ReverseProxyFeature()
+                {
+                    ClusterConfig = cluster1,
+                    AvailableDestinations = new List<DestinationInfo>() { destination1 }.AsReadOnly(),
+                    RouteConfig = routeConfig
+
+                });
+            httpContext.Features.Set(cluster1);
+
             var aspNetCoreEndpoint = CreateAspNetCoreEndpoint(routeConfig);
             aspNetCoreEndpoints.Add(aspNetCoreEndpoint);
             httpContext.SetEndpoint(aspNetCoreEndpoint);

@@ -18,14 +18,18 @@ namespace Microsoft.ReverseProxy.RuntimeModel
     /// </remarks>
     public sealed class DestinationConfig
     {
-        public DestinationConfig(string address)
+        public DestinationConfig(string destinationId, string address)
         {
             if (string.IsNullOrEmpty(address))
             {
                 throw new ArgumentNullException(nameof(address));
             }
+
+            DestinationId = destinationId;
             Address = address;
         }
+
+        public string DestinationId { get; }
 
         // TODO: Make this a Uri.
         public string Address { get; }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.RuntimeModel;
 
 namespace Microsoft.ReverseProxy.Service.Proxy
@@ -16,8 +17,8 @@ namespace Microsoft.ReverseProxy.Service.Proxy
         /// Picks a destination to send traffic to.
         /// </summary>
         // TODO: How to ensure retries pick a different destination when available?
-        DestinationInfo PickDestination(
-            IReadOnlyList<DestinationInfo> availableDestinations,
+        IDestination PickDestination(
+            IReadOnlyList<IDestination> availableDestinations,
             in ClusterConfig.ClusterLoadBalancingOptions loadBalancingOptions);
     }
 }

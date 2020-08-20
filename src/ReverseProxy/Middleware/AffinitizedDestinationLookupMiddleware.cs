@@ -38,7 +38,7 @@ namespace Microsoft.ReverseProxy.Middleware
         {
             var proxyFeature = context.GetRequiredProxyFeature();
 
-            var options = proxyFeature.ClusterConfig.SessionAffinityOptions;
+            var options = proxyFeature.ClusterConfig.Value.SessionAffinityOptions;
 
             if (!options.Enabled)
             {

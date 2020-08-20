@@ -35,7 +35,7 @@ namespace Microsoft.ReverseProxy.Middleware
         public Task Invoke(HttpContext context)
         {
             var proxyFeature = context.GetRequiredProxyFeature();
-            var options = proxyFeature.ClusterConfig.SessionAffinityOptions;
+            var options = proxyFeature.ClusterConfig.Value.SessionAffinityOptions;
 
             if (options.Enabled)
             {
@@ -67,7 +67,7 @@ namespace Microsoft.ReverseProxy.Middleware
             return _next(context);
         }
 
-        private void AffinitizeRequest(HttpContext context, ClusterConfig.ClusterSessionAffinityOptions options, DestinationInfo destination)
+        private void AffinitizeRequest(HttpContext context, ClusterConfig.ClusterSessionAffinityOptions options, IDestination destination)
         {
             var currentProvider = _sessionAffinityProviders.GetRequiredServiceById(options.Mode, SessionAffinityConstants.Modes.Cookie);
             currentProvider.AffinitizeRequest(context, options, destination);

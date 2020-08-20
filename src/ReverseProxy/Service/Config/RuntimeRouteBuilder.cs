@@ -54,7 +54,7 @@ namespace Microsoft.ReverseProxy.Service
             // and changes to the underlying list *are* reflected on the read-only view.
             var aspNetCoreEndpoints = new List<Endpoint>(1);
             var newRouteConfig = new RouteConfig(
-                runtimeRoute,
+                runtimeRoute.RouteId,
                 source.GetConfigHash(),
                 source.Priority,
                 cluster,

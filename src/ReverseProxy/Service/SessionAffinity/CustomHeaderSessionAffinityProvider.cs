@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.ReverseProxy.Abstractions.ClusterDiscovery.Contract;
+using Microsoft.ReverseProxy.Middleware;
 using Microsoft.ReverseProxy.RuntimeModel;
 
 namespace Microsoft.ReverseProxy.Service.SessionAffinity
@@ -24,7 +25,7 @@ namespace Microsoft.ReverseProxy.Service.SessionAffinity
 
         public override string Mode => SessionAffinityConstants.Modes.CustomHeader;
 
-        protected override string GetDestinationAffinityKey(DestinationInfo destination)
+        protected override string GetDestinationAffinityKey(IDestination destination)
         {
             return destination.DestinationId;
         }
